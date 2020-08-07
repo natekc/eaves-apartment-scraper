@@ -9,6 +9,8 @@ import re
 import csv
 from collections import namedtuple
 import datetime
+import sys
+import os
 ##from urllib import request
 
 Apartment = namedtuple("Apartment", "UnitNum, Beds, Baths, Sqft, Price, AvailStart, AvailEnd")
@@ -50,15 +52,21 @@ class eavesApartmentParser:
             apt = Apartment(aptNum, aptNumBedroom, aptNumBath, aptNumSqft, aptPrice, aptAvailStart, aptAvailEnd)
             self._apartments.append(apt)
 
-    def saveCSV(self, fileName : str):
+    def saveCSV(self, filePath : str):
+        thisdate = datetime.datetime.now().strftime('%b-%d-%I%M%p-%G')
+        fileName = os.path.join(filePath, "{}-eavesAvailability.csv".format(thisdate))
         with open(fileName, "w") as f:
             f.write("#UnitNum, Beds, Baths, Sqft, Price, AvailStart, AvailEnd\n")
             csvWriter = csv.writer(f, delimiter=",")
             for apt in self._apartments:
                 csvWriter.writerow([apt.UnitNum, apt.Beds, apt.Baths, apt.Sqft, apt.Price, apt.AvailStart, apt.AvailEnd])
 
+
 URL="https://www.avaloncommunities.com/california/san-diego-apartments/eaves-rancho-penasquitos/apartments?bedroom=1BD"
 if __name__ == "__main__":
-    dl = eavesApartmentParser(URL)
-    thisdate = datetime.datetime.now().strftime('%b-%d-%I%M%p-%G')
-    dl.saveCSV("{}-eavesAvailability.csv".format(thisdate))
+    if len(sys.argv) != 2:
+        print("missing path argument")
+        sys.exit(0)
+    pathArg = sys.argv[1]
+    dl = eavesApartmentParser(URL)    
+    dl.saveCSV(pathArg)
